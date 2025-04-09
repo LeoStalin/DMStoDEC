@@ -101,6 +101,17 @@
         #convertBtn:hover {
             background-color: #45a049;
         }
+        #currentLocationBtn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        #currentLocationBtn:hover {
+            background-color: #0b7dda;
+        }
         .coordinates-display {
             position: absolute;
             bottom: 10px;
@@ -126,6 +137,8 @@
         </div>
         
         <div id="panelContent">
+            <button id="currentLocationBtn"><i class="fas fa-location-arrow"></i> Current Location</button>
+            
             <div class="input-group-container">
                 <div class="input-group-title">Latitude</div>
                 <div class="input-group">
@@ -344,6 +357,59 @@
                 direction: direction
             };
         }
+        
+        // Current Location Button Functionality
+        document.getElementById('currentLocationBtn').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                coordinatesDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var lat = position.coords.latitude;
+                        var lon = position.coords.longitude;
+                        
+                        var latDMS = decimalToDMS(lat, true);
+                        var lonDMS = decimalToDMS(lon, false);
+                        
+                        document.getElementById('latDegrees').value = latDMS.degrees;
+                        document.getElementById('latMinutes').value = latDMS.minutes;
+                        document.getElementById('latSeconds').value = latDMS.seconds.toFixed(2);
+                        document.getElementById('latDirection').value = latDMS.direction;
+                        
+                        document.getElementById('lonDegrees').value = lonDMS.degrees;
+                        document.getElementById('lonMinutes').value = lonDMS.minutes;
+                        document.getElementById('lonSeconds').value = lonDMS.seconds.toFixed(2);
+                        document.getElementById('lonDirection').value = lonDMS.direction;
+                        
+                        document.getElementById('decimalOutput').value = lat.toFixed(8) + ", " + lon.toFixed(8);
+                        
+                        updateMap(lat, lon);
+                    },
+                    function(error) {
+                        var errorMessage;
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "User denied the request for Geolocation.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "Location information is unavailable.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "The request to get user location timed out.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage = "An unknown error occurred.";
+                                break;
+                        }
+                        coordinatesDisplay.innerHTML = '<i class="fas fa-map-marker-alt"></i> ' + errorMessage;
+                        alert(errorMessage);
+                    }
+                );
+            } else {
+                coordinatesDisplay.innerHTML = '<i class="fas fa-map-marker-alt"></i> Geolocation is not supported by this browser.';
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
     </script>
 </body>
 </html>
